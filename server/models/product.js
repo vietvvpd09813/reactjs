@@ -10,6 +10,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER, // Chuyển sang INTEGER để lưu giá trị số nguyên
         allowNull: false,
       },
+      price2: {
+        type: DataTypes.INTEGER, // Chuyển sang INTEGER để lưu giá trị số nguyên
+        allowNull: false,
+      },
       description: {
         type: DataTypes.TEXT,
       },

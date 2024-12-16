@@ -31,11 +31,13 @@ import Homelogin from "./components/user/Homelogin.jsx";
 import store from "./redux/store";
 import { Provider } from "react-redux";
 import Register from "./components/user/register.jsx";
+import CanvasEffect from "./components/user/canvar.jsx";
 
 const router = createBrowserRouter([
   { path: "/login", element: <Login /> },
   { path: "/register", element: <Register /> },
   { path: "/homelogin", element: <Homelogin /> },
+  { path: "/canvar", element: <CanvasEffect /> },
   {
     path: "/",
     element: <Root />,

@@ -3,37 +3,43 @@ import Homeproductsale from "./Homeproductsale";
 import Homevideo from "./Homevideo";
 import List from "./List";
 import Slider from "./slider";
+import Camvar from "./canvar"
 import { useGetProductsAdminQuery } from "../../redux/createAPI";
 
 export default function HomeUser() {
-  // Truy vấn dữ liệu từ API
-  const { data: productResponse, error, isLoading } = useGetProductsAdminQuery();
+  const {
+    data: productResponse,
+    error,
+    isLoading,
+  } = useGetProductsAdminQuery();
 
-  // Gán dữ liệu sản phẩm từ productResponse
   const product = productResponse?.data;
 
-  // Log dữ liệu sản phẩm ra console (truy cập vào product)
-  console.log('Product DataGHGH:', useGetProductsAdminQuery());
-  console.log('Product Data:', product);
-
-  // Kiểm tra trạng thái loading và lỗi
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
   if (error) {
     return <div>Error: {error.message}</div>;
-
   }
+
+  const productsCategory5 = product?.filter((item) => item.categoryId === 5);
+  const productsCategory6 = product?.filter((item) => item.categoryId === 6);
+
+  console.log("Products with categoryId = 5:", productsCategory5);
+  console.log("Products with categoryId = 5:", productsCategory6);
 
   return (
     <>
       <Slider />
-      {/* Truyền biến product vào Homeconten1 */}
-      <Homeconten1 product={product} />
+
+      <Homeconten1 productsCategory5={productsCategory5} />
+
       <Homeproductsale />
       <Homevideo />
-     <List product={product}  />
+
+      <List productsCategory6={productsCategory6} />
+      <Camvar></Camvar>
     </>
   );
 }

@@ -19,7 +19,8 @@ app.use(cors(corsOptions));
 const apiRoute = require("./routes/apiIndex");
 
 app.use("/v1/api", apiRoute)
+// react
 
-app.listen(3000, () => {
-    console.log("Server Started on http://localhost:3000");
+app.listen(3002, () => {
+    console.log("Server Started on http://localhost:3002");
   });

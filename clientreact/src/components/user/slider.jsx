@@ -5,9 +5,9 @@ import { GrFormPrevious } from "react-icons/gr";
 const Slider = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const images = [
-    "https://media.licdn.com/dms/image/v2/C5112AQEaaI6z3NxGLQ/article-inline_image-shrink_1000_1488/article-inline_image-shrink_1000_1488/0/1520238935596?e=1735171200&v=beta&t=jl-XgafPwa3291jO5ow7ff3TuFDKa8x7V_yRxxsOCRw",
-    "https://intphcm.com/data/upload/poster-giay-dep-mat.jpg",
-    "https://file.hstatic.net/1000230642/collection/3_da9a91027cd0488581c18e767bd6e453.jpg"
+    "https://macad.vn/upload/banner-watch-seri4.jpg",
+    "https://cdnv2.tgdd.vn/mwg-static/topzone/Banner/92/27/9227efc5a1f954b26084be2b28d33a6e.png",
+    "https://taoquangsang.vn/wp-content/uploads/2023/09/apple-watch-banner-1.jpg"
   ];
 
   const nextSlide = () => {
@@ -26,17 +26,17 @@ const Slider = () => {
 
   return (
     <div className="max-w-full mx-auto">
-      <div className="relative overflow-hidden rounded-lg">
+      <div className="relative overflow-hidden">
         <div
           className="flex transition-transform duration-500 ease-in-out"
           style={{ transform: `translateX(-${currentSlide * 100}%)` }}
         >
           {images.map((image, index) => (
-            <div key={index} className="w-full shrink-0">
+            <div key={index} className="w-full shrink-0 ">
               <img
                 src={image}
                 alt={`Slide ${index + 1}`}
-                className="w-full h-[400px] object-cover" // Cập nhật chiều cao cố định cho ảnh
+                className="w-full h-[400px] object-cover image-rendering-crisp-edges" // Add image-rendering for sharpness
               />
             </div>
           ))}

@@ -1,8 +1,21 @@
-import React from "react";
+import { useGetUsersQuery } from "./redux/createAPI";
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import "./App.css";
+import { useState } from "react";
 
 export default function App() {
+  const { data: user } = useGetUsersQuery();
+  const [userId, setUserId] = useState(localStorage.getItem("userId"));
+  let image2 = ""; 
+  let name2 = ""; 
+  user?.data?.map((item) => {
+    if (item.id == userId) {
+      image2 = item.image;
+      name2 = item.username
+    }
+  });
+  console.log("userAvatar", image2);
+
   const navigate = useNavigate();
 
   const logout = () => {
@@ -34,21 +47,15 @@ export default function App() {
           <div className="text-xl font-bold text-blue-900">
             Watch<span className="text-indigo-800">Store</span> Admin
           </div>
-          <div className="flex items-center space-x-2">
-            <span className="material-icons-outlined p-2 text-2xl cursor-pointer hover:text-indigo-800 transition-transform duration-300 hover:scale-110 hidden md:block">
-              search
-            </span>
-            <span className="material-icons-outlined p-2 text-2xl cursor-pointer hover:text-indigo-800 transition-transform duration-300 hover:scale-110 hidden md:block">
-              alarm
-            </span>
-            <span className="material-icons-outlined p-2 text-2xl cursor-pointer hover:text-indigo-800 transition-transform duration-300 hover:scale-110 hidden md:block">
-              shopping_cart
-            </span>
+          <div className="flex items-center space-x-2 mr-5">
             <img
-              className="w-10 h-10 rounded-full transition-transform duration-300 hover:scale-110 object-cover"
-              src="https://i.pinimg.com/564x/de/0f/3d/de0f3d06d2c6dbf29a888cf78e4c0323.jpg"
+              className="w-10 h-10 rounded-full border-2 border-gray-500 transition-transform duration-300 hover:scale-110 object-cover"
+              src={image2}
               alt="Profile"
             />
+            <span className="text-lg font-semibold text-gray-800 ">
+              {name2} 
+            </span>
           </div>
         </div>
       </header>

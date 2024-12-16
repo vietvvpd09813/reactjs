@@ -49,13 +49,8 @@ const User = sequelize.define(
       as: "addresses", // Tên alias cho mối quan hệ
     });
 
-    // Mối quan hệ với Order
-    // User.hasMany(models.Order, {
-    //   foreignKey: "userId",
-    //   as: "orders", // Tên alias cho mối quan hệ
-    // });
-
-    // Mối quan hệ với Review
+  
+   
     User.hasMany(models.Review, {
       foreignKey: "userId",
       as: "reviews", // Tên alias cho mối quan hệ

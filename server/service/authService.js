@@ -52,14 +52,14 @@ const login = async (email, password) => {
           username: check.dataValues.username,
           email: check.dataValues.email,
         },
-        "TuanDevAccessToken",
+        "viet11",
         { expiresIn: "1h" }
       );
       const refreshToken = jwt.sign(
         {
           id: check.dataValues.id,
         },
-        "TuanDevRefreshToken",
+        "viet22",
         { expiresIn: "3d" }
       );
 

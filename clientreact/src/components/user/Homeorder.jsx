@@ -1,179 +1,229 @@
+import React, { useState } from "react";
+import { useGetOrdersQuery, useUpdateOrderStatusMutation } from "../../redux/createAPI";
+
 export default function Homeorder() {
+  const userId = localStorage.getItem("userId") || "";
+  const { data, refetch } = useGetOrdersQuery(userId);
+  const [updateOrderStatus] = useUpdateOrderStatusMutation();
+  const [showModal, setShowModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showConfirmCancel, setShowConfirmCancel] = useState(false); // State for confirmation modal
+
+  const nonCancelableStatuses = [
+    "Đã xác nhận",
+    "Đang vận chuyển",
+    "Đang giao hàng",
+    "Đã giao",
+    "Đã hoàn thành",
+  ];
+
+  const toggleModal = (order) => {
+    setShowModal(!showModal);
+    setSelectedOrder(order);
+  };
+
+  const formatCurrency = (value) => {
+    if (typeof value === "number") {
+      return value.toLocaleString("vi-VN", {
+        style: "currency",
+        currency: "VND",
+      });
+    }
+    return "0 VND";
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    try {
+      await updateOrderStatus({ orderId, status: "Đã hủy đơn" }).unwrap();
+      alert("Đơn hàng đã được hủy.");
+      refetch(); 
+    } catch (err) {
+      alert("Hủy đơn hàng thất bại: " + err.message);
+    }
+  };
+
+  const openConfirmCancel = (order) => {
+    if (!nonCancelableStatuses.includes(order.status)) {
+      setSelectedOrder(order);
+      setShowConfirmCancel(true);
+    } else {
+      alert("Không thể hủy đơn hàng .");
+    }
+  };
+
+  const confirmCancel = () => {
+    handleCancelOrder(selectedOrder.id);
+    setShowConfirmCancel(false); 
+  };
+
+  const cancelCancel = () => {
+    setShowConfirmCancel(false); 
+  };
+
+  // If userId is not present, show an empty cart message
+  if (!userId) {
     return (
-      <>
-        <section className="py-24 relative mx-10">
-          <div className="w-full max-w-7xl px-4 md:px-5 lg:px-6 mx-auto">
-            <div className="main-box border border-gray-200 rounded-xl pt-6 max-w-xl max-lg:mx-auto lg:max-w-full">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between px-6 pb-6 border-b border-gray-200">
-                <div className="data">
-                  <p className="font-semibold text-base leading-7 text-black">
-                    Mã đơn hàng:{" "}
-                    <span className="text-indigo-600 font-medium">#10234987</span>
-                  </p>
-                </div>
-              </div>
-  
-              <div className="w-full px-3 min-[400px]:px-6">
-                <div className="flex flex-col lg:flex-row items-center py-6 border-b border-gray-200 gap-6 w-full">
-                  <div className="img-box max-lg:w-full">
-                    <img
-                      src="https://readymadeui.com/images/product14.webp"
-                      alt="Giày Sneaker"
-                      className="aspect-square w-full lg:max-w-[140px] rounded-xl object-cover"
-                    />
-                  </div>
-                  <div className="flex flex-row items-center w-full">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 w-full">
-                      <div className="flex items-center">
-                        <div>
-                          <h2 className="font-semibold text-xl leading-8 text-black mb-3">
-                            Giày Sneaker Velvet
-                          </h2>
-                          <p className="font-normal text-lg leading-8 text-gray-500 mb-3">
-                            Thương hiệu: Velvet
-                          </p>
-                          <div className="flex items-center">
-                            <p className="font-medium text-base leading-7 text-black pr-4 mr-4 border-r border-gray-200">
-                              Kích thước: <span className="text-gray-500">XL</span>
-                            </p>
-                            <p className="font-medium text-base leading-7 text-black">
-                              Số lượng: <span className="text-gray-500">1</span>
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-5">
-                        <div className="col-span-5 lg:col-span-1 flex items-center max-lg:mt-3">
-                          <div className="flex gap-3 lg:block">
-                            <p className="font-medium text-sm leading-7 text-black">
-                              Giá
-                            </p>
-                            <p className="lg:mt-4 font-medium text-sm leading-7 text-indigo-600">
-                              $20.00
-                            </p>
-                          </div>
-                        </div>
-                        <div className="col-span-5 lg:col-span-2 flex items-center max-lg:mt-3">
-                          <div className="flex gap-3 lg:block">
-                            <p className="font-medium text-sm leading-7 text-black">
-                              Trạng thái
-                            </p>
-                            <p className="font-medium text-sm leading-6 whitespace-nowrap py-0.5 px-3 rounded-full lg:mt-3 bg-emerald-50 text-emerald-600">
-                              Sẵn sàng giao hàng
-                            </p>
-                          </div>
-                        </div>
-                        <div className="col-span-5 lg:col-span-2 flex items-center max-lg:mt-3">
-                          <div className="flex gap-3 lg:block">
-                            <p className="font-medium text-sm whitespace-nowrap leading-6 text-black">
-                              Thời gian giao hàng dự kiến
-                            </p>
-                            <p className="font-medium text-base whitespace-nowrap leading-7 lg:mt-3 text-emerald-500">
-                              23 tháng 3, 2024
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-  
-                {/* Thêm giày thứ 2 nếu cần */}
-                <div className="flex flex-col lg:flex-row items-center py-6 gap-6 w-full">
-                  <div className="img-box max-lg:w-full">
-                    <img
-                      src="https://readymadeui.com/images/product14.webp"
-                      alt="Giày Sneaker"
-                      className="aspect-square w-full lg:max-w-[140px] rounded-xl object-cover"
-                    />
-                  </div>
-                  <div className="flex flex-row items-center w-full">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 w-full">
-                      <div className="flex items-center">
-                        <div>
-                          <h2 className="font-semibold text-xl leading-8 text-black mb-3">
-                            Giày Thể Thao Cao Cấp
-                          </h2>
-                          <p className="font-normal text-lg leading-8 text-gray-500 mb-3">
-                            Thương hiệu: Sportswear
-                          </p>
-                          <div className="flex items-center">
-                            <p className="font-medium text-base leading-7 text-black pr-4 mr-4 border-r border-gray-200">
-                              Kích thước: <span className="text-gray-500">L</span>
-                            </p>
-                            <p className="font-medium text-base leading-7 text-black">
-                              Số lượng: <span className="text-gray-500">2</span>
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-5">
-                        <div className="col-span-5 lg:col-span-1 flex items-center max-lg:mt-3">
-                          <div className="flex gap-3 lg:block">
-                            <p className="font-medium text-sm leading-7 text-black">
-                              Giá
-                            </p>
-                            <p className="lg:mt-4 font-medium text-sm leading-7 text-indigo-600">
-                              $40.00
-                            </p>
-                          </div>
-                        </div>
-                        <div className="col-span-5 lg:col-span-2 flex items-center max-lg:mt-3">
-                          <div className="flex gap-3 lg:block">
-                            <p className="font-medium text-sm leading-7 text-black">
-                              Trạng thái
-                            </p>
-                            <p className="font-medium text-sm leading-6 py-0.5 px-3 whitespace-nowrap rounded-full lg:mt-3 bg-indigo-50 text-indigo-600">
-                              Đã giao
-                            </p>
-                          </div>
-                        </div>
-                        <div className="col-span-5 lg:col-span-2 flex items-center max-lg:mt-3">
-                          <div className="flex gap-3 lg:block">
-                            <p className="font-medium text-sm whitespace-nowrap leading-6 text-black">
-                              Thời gian giao hàng dự kiến
-                            </p>
-                            <p className="font-medium text-base whitespace-nowrap leading-7 lg:mt-3 text-emerald-500">
-                              23 tháng 3, 2024
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-  
-              <div className="w-full border-t border-gray-200 px-6 flex flex-col lg:flex-row items-center justify-between">
-                <div className="flex flex-col sm:flex-row items-center max-lg:border-b border-gray-200">
-                  <button className="flex outline-0 py-6 sm:pr-6 sm:border-r border-gray-200 whitespace-nowrap gap-2 items-center justify-center font-semibold group text-lg text-black bg-white transition-all duration-500 hover:text-indigo-600">
-                    <svg
-                      className="stroke-black transition-all duration-500 group-hover:stroke-indigo-600"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width={22}
-                      height={22}
-                      viewBox="0 0 22 22"
-                      fill="none"
-                    >
-                      <path
-                        d="M5.5 5.5L16.5 16.5M16.5 5.5L5.5 16.5"
-                        stroke=""
-                        strokeWidth="1.6"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    Hủy đơn hàng
-                  </button>
-                 
-                </div>
-                <p className="font-semibold text-lg text-black py-6">
-                  Tổng giá trị: <span className="text-indigo-600"> $200.00</span>
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-      </>
+      <div className="text-center p-6">
+        <h2 className="text-2xl font-semibold text-gray-700">Giỏ hàng của bạn hiện tại trống.</h2>
+        <p className="text-gray-600">Vui lòng đăng nhập để xem và quản lý đơn hàng của bạn.</p>
+      </div>
     );
   }
-  
+
+  return (
+    <div>
+      {data?.orders?.length === 0 ? (
+        <div className="text-center p-6">
+          <h2 className="text-2xl font-semibold text-gray-700">Không có đơn hàng nào.</h2>
+          <p className="text-gray-600">Bạn chưa có đơn hàng nào để quản lý.</p>
+        </div>
+      ) : (
+        data?.orders?.map((item) => (
+          <div
+            key={item.id}
+            className="p-6 max-w-4xl mx-auto bg-white border border-gray-200 rounded-lg shadow-lg mt-10"
+          >
+            <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
+              Thông tin đơn hàng
+            </h2>
+            <div className="space-y-3 mb-6">
+              <p>
+                <strong className="font-semibold text-gray-700">
+                  Tên khách hàng:
+                </strong>{" "}
+                {item.fullname}
+              </p>
+              <p>
+                <strong className="font-semibold text-gray-700">Địa chỉ:</strong>{" "}
+                {item.address}
+              </p>
+              <p>
+                <strong className="font-semibold text-gray-700">
+                  Số điện thoại:
+                </strong>{" "}
+                {item.phone}
+              </p>
+              <p>
+                <strong className="font-semibold text-gray-700">
+                  Tổng tiền:
+                </strong>{" "}
+                {formatCurrency(parseFloat(item.totalPrice))}
+              </p>
+
+              <p>
+                <strong className="font-semibold text-gray-700">
+                  Trạng thái đơn hàng:
+                </strong>{" "}
+                {item.status}
+              </p>
+            </div>
+            <div className="flex justify-between items-center mt-6">
+              <button
+                onClick={() => toggleModal(item)}
+                className="px-8 py-3 bg-gradient-to-r from-green-400 to-blue-500 text-white font-semibold rounded-lg shadow-lg hover:from-green-500 hover:to-blue-600 transform hover:scale-105 transition-all duration-300 ease-in-out"
+              >
+                {showModal && selectedOrder?.id === item.id
+                  ? "Ẩn chi tiết"
+                  : "Xem chi tiết"}
+              </button>
+
+              {/* Add Hủy đơn hàng button */}
+              <button
+                onClick={() => openConfirmCancel(item)} // Use the new function for confirming cancel
+                className="px-8 py-3 bg-gradient-to-r from-red-400 to-red-500 text-white font-semibold rounded-lg shadow-lg hover:from-red-500 hover:to-red-600 transform hover:scale-105 transition-all duration-300 ease-in-out"
+              >
+                Hủy đơn hàng
+              </button>
+            </div>
+
+            {showModal && selectedOrder?.id === item.id && (
+              <div
+                className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 backdrop-blur-md transition-opacity duration-500 ease-out"
+                onClick={() => setShowModal(false)}
+              >
+                <div
+                  className="bg-white p-8 rounded-3xl w-11/12 max-w-3xl shadow-2xl animate__animated animate__fadeIn animate__delay-1s"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-2xl font-semibold text-center text-gray-800">
+                      Chi tiết đơn hàng
+                    </h3>
+                    <button
+                      onClick={() => setShowModal(false)}
+                      className="text-gray-600 hover:text-gray-900 font-semibold text-lg"
+                    >
+                      X
+                    </button>
+                  </div>
+                  <table className="min-w-full border-collapse text-sm text-gray-700">
+                    <thead className="bg-gradient-to-r from-green-500 to-blue-500 text-white">
+                      <tr>
+                        <th className="px-4 py-2">Hình ảnh</th>
+                        <th className="px-4 py-2">Tên sản phẩm</th>
+                        <th className="px-4 py-2">Giá</th>
+                        <th className="px-4 py-2">Số lượng</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {item.orderItems.map((orderItem) => (
+                        <tr
+                          key={orderItem.id}
+                          className="border-b hover:bg-gray-100"
+                        >
+                          <td className="px-4 py-3 text-center">
+                            <img
+                              src={orderItem.product.image1}
+                              alt={orderItem.product.name}
+                              className="w-16 h-16 object-cover rounded-md"
+                            />
+                          </td>
+                          <td className="px-4 py-3">{orderItem.product.name}</td>
+                          <td className="px-4 py-3">
+                            {formatCurrency(orderItem.product.price)}
+                          </td>
+                          <td className="px-4 py-3">{orderItem.quantity}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        ))
+      )}
+
+      {/* Confirmation Modal for canceling the order */}
+      {showConfirmCancel && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 backdrop-blur-md transition-opacity duration-500 ease-out"
+          onClick={cancelCancel}
+        >
+          <div
+            className="bg-white p-8 rounded-3xl w-11/12 max-w-md shadow-2xl animate__animated animate__fadeIn animate__delay-1s"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-2xl font-semibold text-center text-gray-800 mb-4">
+              Bạn có chắc muốn hủy đơn hàng này?
+            </h3>
+            <div className="flex justify-between">
+              <button
+                onClick={confirmCancel}
+                className="px-6 py-2 bg-red-500 text-white font-semibold rounded-lg shadow-lg"
+              >
+                Hủy đơn
+              </button>
+              <button
+                onClick={cancelCancel}
+                className="px-6 py-2 bg-gray-500 text-white font-semibold rounded-lg shadow-lg"
+              >
+                Hủy bỏ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

@@ -4,6 +4,9 @@ const {
   getCart,
   updateCart,
   deleteCart,
+ 
+  // reacttt
+  
 } = require("../service/cartService");
 const { resErrors, resData } = require("./common/common");
 
@@ -43,6 +46,16 @@ class ApiCartController {
       resErrors(res, 500, error.message);
     }
   }
+  // static async deleteAll(req, res) {
+  //   try {
+  //     const userId = req.params.userId;  // Hoặc req.body.userId nếu cần
+  //     const deletedCarts = await deleteAllCarts(userId);  // Truyền userId vào hàm xóa giỏ hàng
+  //     let message = `${deletedCarts} cart(s) deleted successfully`;
+  //     resData(res, 200, message, deletedCarts);
+  //   } catch (error) {
+  //     resErrors(res, 500, error.message);
+  //   }
+  // }
 
   static async delete(req, res) {
     try {
@@ -58,13 +71,10 @@ class ApiCartController {
   static async update(req, res) {
     const { id } = req.params;
     const data = req.body;
-    console.log("id controller", id);
 
-    console.log("userId, cart controller", data);
     try {
-      const userId = data.userId;
       const quantity = data.quantity;
-      const update = await updateCart(userId, id, quantity);
+      const update = await updateCart(id, quantity);
       console.log(update);
 
       let message = "Update cart data successfully";

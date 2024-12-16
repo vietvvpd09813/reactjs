@@ -1,6 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { todoApi } from './createAPI'
-// import reducer from './TodoSlice'
 import { setupListeners } from '@reduxjs/toolkit/query'
 
 const store = configureStore({

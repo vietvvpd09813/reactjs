@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
-import { useGetAllCartsQuery, useDeleteCartMutation } from "../../redux/createAPI";
+import { useGetAllCartsQuery, useDeleteCartMutation, useUpdateCartMutation } from "../../redux/createAPI";
 import { Link } from "react-router-dom";
 
 export default function Homecart() {
@@ -9,6 +9,7 @@ export default function Homecart() {
   const { data: cart, refetch } = useGetAllCartsQuery(userId, {
     refetchOnMountOrArgChange: true,
   });
+  const [updateCartMutation] = useUpdateCartMutation();
 
   useEffect(() => {
     if (!userId) {
@@ -16,17 +17,67 @@ export default function Homecart() {
     }
   }, [userId]);
 
+  const datacart = cart?.data || [];
+
+  // Lưu trữ giá trị quantity của các sản phẩm trong giỏ hàng
+  const [quantities, setQuantities] = useState(
+    datacart.reduce((acc, item) => {
+      acc[item.id] = item.quantity;
+      return acc;
+    }, {})
+  );
+
+  // Cập nhật số lượng trong state quantities
+  const updateCartQuantity = async (cartId, newQuantity) => {
+    const cartToUpdate = datacart.find((cart) => cart.id === cartId);
+
+    if (cartToUpdate) {
+      try {
+        await updateCartMutation({
+          id: cartToUpdate.id,
+          body: { quantity: newQuantity },
+        }).unwrap();
+        refetch(); // Làm mới giỏ hàng sau khi cập nhật
+      } catch (error) {
+        console.error("Failed to update cart", error);
+      }
+    }
+  };
+
+  // Giảm số lượng sản phẩm
+  const handleDecrease = async (id) => {
+    setQuantities((prevQuantities) => {
+      const newQuantity = prevQuantities[id] > 1 ? prevQuantities[id] - 1 : 1;
+      updateCartQuantity(id, newQuantity);
+      return { ...prevQuantities, [id]: newQuantity };
+    });
+  };
+
+  // Tăng số lượng sản phẩm
+  const handleIncrease = async (id) => {
+    setQuantities((prevQuantities) => {
+      const newQuantity = prevQuantities[id] + 1;
+      updateCartQuantity(id, newQuantity);
+      return { ...prevQuantities, [id]: newQuantity };
+    });
+  };
+
   const handleDeleteCart = async (id) => {
     try {
-      await deleteCart(id); // Gửi yêu cầu xóa sản phẩm
-      refetch(); // Làm mới danh sách sản phẩm sau khi xóa
+      await deleteCart(id); 
+      refetch(); 
       toast.success("Đã xóa sản phẩm khỏi giỏ hàng");
     } catch (error) {
       toast.error("Xóa sản phẩm không thành công");
     }
   };
 
-  const datacart = cart?.data || [];
+  // Tính tổng số lượng và tổng giá trị trong giỏ hàng
+  const tongSoLuong = datacart.reduce((total, item) => total + item.quantity, 0);
+  const tongTien = datacart.reduce(
+    (total, item) => total + item.product.price * item.quantity,
+    0
+  );
 
   if (!userId) {
     return (
@@ -40,41 +91,49 @@ export default function Homecart() {
   return (
     <div className="font-sans bg-white py-4 mx-auto mx-10">
       <ToastContainer />
-      <div className="grid md:grid-cols-3 gap-4">
-        <div className="md:col-span-2 bg-gray-100 p-4 rounded-md">
-          <h2 className="text-2xl font-bold text-gray-800">Giỏ hàng</h2>
+      <div className="grid md:grid-cols-3 gap-6">
+        <div className="md:col-span-2 bg-gray-50 p-6 rounded-lg shadow-lg hover:shadow-2xl transition-all">
+          <h2 className="text-2xl font-semibold text-gray-800">Giỏ hàng</h2>
           <hr className="border-gray-300 mt-4 mb-8" />
           {datacart.length > 0 ? (
             datacart.map((item, index) => (
-              <div key={index} className="grid md:grid-cols-4 items-center gap-4 py-4">
+              <div
+                key={index}
+                className="grid md:grid-cols-4 items-center gap-6 py-4 border-b border-gray-300 hover:border-gray-500 transition-all duration-300"
+              >
                 <div className="col-span-2 flex items-center gap-6">
                   <div className="w-28 h-28 shrink-0">
                     <img
                       src={item.product.image1 || "https://readymadeui.com/images/product14.webp"}
-                      className="w-full h-full object-contain"
+                      className="w-full h-full object-contain rounded-md"
                       alt={item.productName}
                     />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-gray-800">{item.product.name || "Product Name"}</h3>
+                    <h3 className="text-base font-semibold text-gray-800">{item.product.name || "Product Name"}</h3>
                     <h6 className="text-sm text-gray-500 mt-1">
-                      Color: <span className="ml-2 font-semibold">{item.color || "Black/White"}</span>
+                      Màu sắc:{" "}
+                      <span className="ml-2 font-semibold">
+                        {item.color?.toLowerCase() || "Màu khác"}
+                      </span>
                     </h6>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
-                    className="flex items-center justify-center w-5 h-5 bg-blue-600 outline-none rounded-full"
+                    onClick={() => handleDecrease(item.id)}
+                    className="flex items-center justify-center w-6 h-6 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-2 fill-white" viewBox="0 0 124 124">
                       <path d="M112 50H12C5.4 50 0 55.4 0 62s5.4 12 12 12h100c6.6 0 12-5.4 12-12s-5.4-12-12-12z" />
                     </svg>
                   </button>
-                  <span className="font-bold text-sm leading-[18px]">{item.quantity}</span>
+                  <span className="font-bold text-sm leading-[18px]">{quantities[item.id] || item.quantity}</span>
                   <button
                     type="button"
-                    className="flex items-center justify-center w-5 h-5 bg-blue-600 outline-none rounded-full"
+                    onClick={() => handleIncrease(item.id)}
+                    className="flex items-center justify-center w-6 h-6 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-2 fill-white" viewBox="0 0 42 42">
                       <path d="M37.059 16H26V4.941C26 2.224 23.718 0 21 0s-5 2.224-5 4.941V16H4.941C2.224 16 0 18.282 0 21s2.224 5 4.941 5H16v11.059C16 39.776 18.282 42 21 42s5-2.224 5-4.941V26h11.059C39.776 26 42 23.718 42 21s-2.224-5-4.941-5z" />
@@ -87,7 +146,7 @@ export default function Homecart() {
                   </h4>
                   <button
                     onClick={() => handleDeleteCart(item.id)}
-                    className="w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center ml-auto"
+                    className="w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center ml-auto transition-all"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -102,38 +161,39 @@ export default function Homecart() {
               </div>
             ))
           ) : (
-            <p>Giỏ hàng của bạn đang trống.</p>
+            <p className="text-gray-500 text-xl">Giỏ hàng của bạn đang trống.</p>
           )}
         </div>
 
-        <div className="bg-gray-100 rounded-md p-4 md:sticky top-0">
+        <div className="bg-gray-50 rounded-md p-6 shadow-md sticky top-0">
           <ul className="text-gray-800 mt-8 space-y-4">
-            <li className="flex flex-wrap gap-4 text-base">
-              Giảm giá <span className="ml-auto font-bold">$0.00</span>
+            <li className="flex justify-between items-center text-base">
+              <span>Tổng số lượng</span>
+              <span className="font-bold">{tongSoLuong}</span>
             </li>
-            <li className="flex flex-wrap gap-4 text-base">
-              Vận chuyển <span className="ml-auto font-bold">$2.00</span>
+            <li className="flex justify-between items-center text-base">
+              <span>Vận chuyển</span>
+              <span className="font-bold">2,000 VND</span>
             </li>
-            <li className="flex flex-wrap gap-4 text-base">
-              Thuế <span className="ml-auto font-bold">$4.00</span>
+            <li className="flex justify-between items-center text-base">
+              <span>Thuế</span>
+              <span className="font-bold">4,000 VND</span>
             </li>
-            <li className="flex flex-wrap gap-4 text-base font-bold">
-              Tổng cộng <span className="ml-auto">$52.00</span>
+            <li className="flex justify-between items-center text-base font-bold">
+              <span>Tổng Tiền</span>
+              <span className="font-bold">
+                {tongTien.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}
+              </span>
             </li>
           </ul>
-          <div className="mt-8 space-y-2">
-            <button
+          <div className="mt-8 space-y-4">
+           <Link to = "/pay"> <button 
               type="button"
-              className="text-sm px-4 py-2.5 w-full font-semibold tracking-wide bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+               className="text-sm px-6 py-2 w-full rounded-md bg-black text-white font-bold hover:bg-black/80 transition-all"
             >
-              <Link to="/pay">Thanh toán</Link>
-            </button>
-            <button  
-              type="button"
-              className="text-sm px-4 py-2.5 w-full font-semibold tracking-wide bg-transparent text-gray-800 border border-gray-300 rounded-md"
-            >
-              <Link to="/">Mua sắm</Link>
-            </button>
+              Thanh toán
+            </button></Link>
+           
           </div>
         </div>
       </div>

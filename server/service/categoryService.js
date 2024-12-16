@@ -12,6 +12,7 @@ const getAllCategories = async () => {
 }
 
 const createCategory = async ({name,image, description}) => {
+    
     try {
         const result = await Category.create({name,image,description})
         return result;
